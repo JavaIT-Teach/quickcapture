@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>QuickCapture – Inbox</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='100%25' height='100%25' fill='white'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='120'%3E✍%3C/text%3E%3C/svg%3E">
+  <style>
+    :root{
+      --bg:#0f1115; --panel:#151822; --muted:#6b7280; --text:#f9fafb; --accent:#ef4444; --ok:#10b981; --border:#242837;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";}
+    .wrap{max-width:740px;margin:0 auto;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);}
+    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(15,17,21,.7)),var(--bg);backdrop-filter:saturate(1.2) blur(6px);z-index:3;padding:12px 0 10px}
+    h1{margin:0;font-size:22px;font-weight:700;letter-spacing:.2px}
+    .input{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:12px}
+    textarea{width:100%;min-height:92px;background:transparent;border:0;color:var(--text);font-size:18px;line-height:1.4;outline:none;resize:none}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+    .btn{appearance:none;border:1px solid var(--border);background:#1b2030;color:var(--text);padding:10px 14px;border-radius:999px;font-weight:600;font-size:15px}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:var(--accent);border-color:transparent}
+    .btn.ghost{background:transparent}
+    .pill{padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:#141827;color:var(--text);cursor:pointer;user-select:none}
+    .pill.active{outline:2px solid var(--accent)}
+    .hint{color:var(--muted);font-size:13px;margin-top:6px}
+    .list{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:12px}
+    .card.done{opacity:.6}
+    .top{display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{font-size:12px;background:#10131b;border:1px solid var(--border);border-radius:999px;padding:4px 8px;color:var(--muted)}
+    .text{white-space:pre-wrap;margin:8px 0 0;font-size:16px}
+    .tools{display:flex;gap:8px;margin-top:10px}
+    .tools .btn{font-size:13px;padding:8px 10px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .divider{height:1px;background:var(--border);margin:16px 0}
+    .empty{color:var(--muted);text-align:center;padding:18px 4px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>QuickCapture</h1>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="input" id="capture">
+      <textarea id="note" placeholder="Type your idea or task…" inputmode="text" autocapitalize="sentences" autocomplete="off" autocorrect="on"></textarea>
+      <div class="row">
+        <div class="tags" id="tagPills"></div>
+        <button class="btn primary" id="saveBtn">Save</button>
+        <button class="btn ghost" id="clearBtn" title="Clear text">Clear</button>
+      </div>
+      <div class="hint">Tip: tap mic on iOS keyboard to dictate. Everything saves locally. No reminders.</div>
+    </section>
+
+    <div class="toolbar">
+      <button class="btn" id="copyPending">Copy pending</button>
+      <button class="btn" id="exportJSON">Export JSON</button>
+      <button class="btn" id="exportCSV">Export CSV</button>
+      <button class="btn ghost" id="purgeAll" title="Delete all entries">Purge</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <section>
+      <div class="row">
+        <h2 style="margin:0;font-size:18px">Inbox</h2>
+        <span class="hint" id="countHint"></span>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="empty" id="empty">Empty. Add something above.</div>
+    </section>
+  </main>
+
+  <script>
+  ;(() => {
+    const LS_KEY = 'qc_items_v1';
+    const DRAFT_KEY = 'qc_draft_v1';
+    const DEFAULT_TAGS = ['task','idea','errand','note'];
+
+    /** State **/
+    let items = load();
+    let activeTags = new Set(JSON.parse(localStorage.getItem('qc_active_tags')||'[]'));
+    if (activeTags.size === 0) { activeTags = new Set(['task']); }
+
+    /** Elements **/
+    const note = document.getElementById('note');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const list = document.getElementById('list');
+    const empty = document.getElementById('empty');
+    const tagPills = document.getElementById('tagPills');
+    const countHint = document.getElementById('countHint');
+
+    /** Init **/
+    // restore draft
+    note.value = localStorage.getItem(DRAFT_KEY) || '';
+    autoResize(note);
+    renderTagPills();
+    render();
+
+    // focus quickly without zoom glitches (font-size >=16px prevents zoom)
+    setTimeout(() => note.focus({preventScroll:false}), 150);
+
+    /** Events **/
+    note.addEventListener('input', () => {
+      autoResize(note);
+      localStorage.setItem(DRAFT_KEY, note.value);
+    });
+
+    saveBtn.addEventListener('click', onSave);
+    clearBtn.addEventListener('click', () => { note.value=''; localStorage.removeItem(DRAFT_KEY); autoResize(note); });
+
+    document.getElementById('copyPending').addEventListener('click', () => {
+      const pending = items.filter(i => !i.done).map(fmtLine).join('\n');
+      copy(pending || '');
+      toast('Copied');
+    });
+
+    document.getElementById('exportJSON').addEventListener('click', () => download('quickcapture.json', JSON.stringify(items, null, 2)));
+    document.getElementById('exportCSV').addEventListener('click', () => download('quickcapture.csv', toCSV(items)));
+
+    document.getElementById('purgeAll').addEventListener('click', () => {
+      if (!confirm('Delete all entries?')) return;
+      items = [];
+      save();
+      render();
+    });
+
+    /** Functions **/
+    function onSave(){
+      const text = note.value.trim();
+      if (!text) { toast('Nothing to save'); return; }
+      const tags = Array.from(activeTags);
+      const it = { id: uid(), text, tags, createdAt: Date.now(), done:false };
+      items.unshift(it);
+      save();
+      note.value = '';
+      localStorage.removeItem(DRAFT_KEY);
+      autoResize(note);
+      render();
+    }
+
+    function render(){
+      list.innerHTML = '';
+      if (!items.length){ empty.style.display='block'; countHint.textContent=''; return; }
+      empty.style.display='none';
+      countHint.textContent = `${items.filter(i=>!i.done).length} pending / ${items.length} total`;
+      for (const it of items){
+        const card = document.createElement('div');
+        card.className = 'card' + (it.done ? ' done' : '');
+        const top = document.createElement('div');
+        top.className = 'top';
+        const tags = document.createElement('div');
+        tags.className = 'tags';
+        for (const t of it.tags){
+          const span = document.createElement('span');
+          span.className = 'tag';
+          span.textContent = `#${t}`;
+          tags.appendChild(span);
+        }
+        const time = document.createElement('span');
+        time.className = 'hint';
+        time.textContent = timeAgo(it.createdAt);
+        top.append(tags, time);
+
+        const text = document.createElement('div');
+        text.className = 'text';
+        text.textContent = it.text;
+
+        const tools = document.createElement('div');
+        tools.className = 'tools';
+        const doneBtn = btn(it.done ? 'Mark pending' : 'Mark done', () => { it.done = !it.done; save(); render(); });
+        const copyBtn = btn('Copy', () => { copy(fmtLine(it)); toast('Copied'); });
+        const delBtn = btn('Delete', () => { if(confirm('Delete this?')){ items = items.filter(x=>x.id!==it.id); save(); render(); }});
+        tools.append(doneBtn, copyBtn, delBtn);
+
+        card.append(top, text, tools);
+        list.appendChild(card);
+      }
+    }
+
+    function renderTagPills(){
+      tagPills.innerHTML = '';
+      for (const t of DEFAULT_TAGS){
+        const pill = document.createElement('div');
+        pill.className = 'pill' + (activeTags.has(t) ? ' active' : '');
+        pill.textContent = `#${t}`;
+        pill.addEventListener('click', () => {
+          if (activeTags.has(t)) activeTags.delete(t); else activeTags.add(t);
+          localStorage.setItem('qc_active_tags', JSON.stringify(Array.from(activeTags)));
+          renderTagPills();
+        });
+        tagPills.appendChild(pill);
+      }
+    }
+
+    function btn(label, fn){ const b=document.createElement('button'); b.className='btn'; b.textContent=label; b.onclick=fn; return b; }
+    function uid(){ return Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4); }
+    function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY))||[] }catch{ return [] } }
+    function save(){ localStorage.setItem(LS_KEY, JSON.stringify(items)); }
+    function fmtLine(i){ return `• ${i.text} ${i.tags.length?('['+i.tags.join(',')+']'):''}`.trim(); }
+    function copy(s){ navigator.clipboard?.writeText(s).catch(()=>{}); }
+    function download(name, content){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([content], {type:'text/plain'})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000); }
+    function toCSV(rows){
+      const esc = v => '"' + String(v).replaceAll('"','""') + '"';
+      const header = ['id','text','tags','createdAt','done'];
+      const lines = [header.join(',')];
+      for (const r of rows){ lines.push([r.id, r.text, r.tags.join('|'), new Date(r.createdAt).toISOString(), r.done].map(esc).join(',')); }
+      return lines.join('\n');
+    }
+    function timeAgo(ts){
+      const s=(Date.now()-ts)/1000; if(s<60) return 'just now';
+      const m=s/60; if(m<60) return `${Math.floor(m)}m`;
+      const h=m/60; if(h<24) return `${Math.floor(h)}h`;
+      const d=h/24; if(d<7) return `${Math.floor(d)}d`;
+      const dt=new Date(ts); return dt.toLocaleDateString();
+    }
+    function autoResize(el){ el.style.height='auto'; el.style.height = (el.scrollHeight+2) + 'px'; }
+
+    // Pull to quick-add via share sheet text (if opened with ?t=...)
+    try {
+      const params = new URLSearchParams(location.search);
+      const t = params.get('t');
+      if (t) { note.value = decodeURIComponent(t); autoResize(note); }
+    } catch {}
+  })();
+  </script>
+</body>
+</html>
