@@ -3,71 +3,129 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>QuickCapture – Inbox</title>
+  <title>QuickCapture – Tasks</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='100%25' height='100%25' fill='white'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='120'%3E✍%3C/text%3E%3C/svg%3E">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='100%25' height='100%25' fill='white'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='120'%3E%E2%9C%8D%3C/text%3E%3C/svg%3E">
   <style>
     :root{
-      --bg:#0f1115; --panel:#151822; --muted:#6b7280; --text:#f9fafb; --accent:#ef4444; --ok:#10b981; --border:#242837;
+      /* Light theme */
+      --bg:#ffffff; 
+      --panel:#ffffff; 
+      --panel-soft:#f8fafc;
+      --muted:#6b7280; 
+      --text:#0f172a; 
+      --accent:#2563eb; 
+      --ok:#10b981; 
+      --warn:#f59e0b; 
+      --danger:#ef4444;
+      --border:#e5e7eb;
+      --chip:#f1f5f9;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";}
-    .wrap{max-width:740px;margin:0 auto;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);}
-    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(15,17,21,.7)),var(--bg);backdrop-filter:saturate(1.2) blur(6px);z-index:3;padding:12px 0 10px}
-    h1{margin:0;font-size:22px;font-weight:700;letter-spacing:.2px}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji"}
+    .wrap{max-width:860px;margin:0 auto;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+    header{position:sticky;top:0;background:linear-gradient(180deg,#ffffff,rgba(255,255,255,.8)),#ffffff;backdrop-filter:saturate(1.2) blur(6px);z-index:3;padding:12px 0 8px;border-bottom:1px solid var(--border)}
+    h1{margin:0 0 8px;font-size:22px;font-weight:800;letter-spacing:.2px}
+    .sub{color:var(--muted);font-size:13px}
+
+    /* Tabs */
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .tab{appearance:none;border:1px solid var(--border);background:var(--panel);color:var(--text);padding:8px 12px;border-radius:999px;font-weight:600;font-size:14px;cursor:pointer}
+    .tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+    /* Input */
     .input{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:12px}
     textarea{width:100%;min-height:92px;background:transparent;border:0;color:var(--text);font-size:18px;line-height:1.4;outline:none;resize:none}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
-    .btn{appearance:none;border:1px solid var(--border);background:#1b2030;color:var(--text);padding:10px 14px;border-radius:999px;font-weight:600;font-size:15px}
+
+    .btn{appearance:none;border:1px solid var(--border);background:#f3f4f6;color:var(--text);padding:10px 14px;border-radius:999px;font-weight:600;font-size:15px;cursor:pointer}
     .btn:active{transform:translateY(1px)}
-    .btn.primary{background:var(--accent);border-color:transparent}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
     .btn.ghost{background:transparent}
-    .pill{padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:#141827;color:var(--text);cursor:pointer;user-select:none}
+    .btn.warn{background:var(--danger);border-color:var(--danger);color:#fff}
+
+    .pill{padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:var(--chip);color:var(--text);cursor:pointer;user-select:none}
     .pill.active{outline:2px solid var(--accent)}
     .hint{color:var(--muted);font-size:13px;margin-top:6px}
-    .list{margin-top:18px;display:flex;flex-direction:column;gap:10px}
-    .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:12px}
-    .card.done{opacity:.6}
-    .top{display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .tags{display:flex;gap:6px;flex-wrap:wrap}
-    .tag{font-size:12px;background:#10131b;border:1px solid var(--border);border-radius:999px;padding:4px 8px;color:var(--muted)}
-    .text{white-space:pre-wrap;margin:8px 0 0;font-size:16px}
-    .tools{display:flex;gap:8px;margin-top:10px}
-    .tools .btn{font-size:13px;padding:8px 10px}
+
     .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
     .divider{height:1px;background:var(--border);margin:16px 0}
     .empty{color:var(--muted);text-align:center;padding:18px 4px}
+
+    /* Lists */
+    .list{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:12px}
+    .card.done{opacity:.85;background:var(--panel-soft)}
+    .top{display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{font-size:12px;background:var(--chip);border:1px solid var(--border);border-radius:999px;padding:4px 8px;color:var(--muted)}
+    .text{white-space:pre-wrap;margin:8px 0 0;font-size:16px}
+    .tools{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .tools .btn{font-size:13px;padding:8px 10px}
+
+    /* Aging colors for ongoing tasks – white text in boxes */
+    .age-green{background:var(--ok)!important;border-color:transparent;color:#fff}
+    .age-orange{background:var(--warn)!important;border-color:transparent;color:#fff}
+    .age-red{background:var(--danger)!important;border-color:transparent;color:#fff}
+    .age-green .tag,.age-orange .tag,.age-red .tag{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.22);color:#fff}
+    .age-green .hint,.age-orange .hint,.age-red .hint{color:rgba(255,255,255,.9)}
+
+    /* Views */
+    .view{display:none}
+    .view.active{display:block}
+
+    /* Stats */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
+    .stat{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px}
+    .stat h3{margin:0 0 6px;font-size:14px;color:var(--muted)}
+    .stat .big{font-size:28px;font-weight:800}
+    .bar{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+    .bar > div{height:100%}
+
+    /* Settings */
+    .setting{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;margin-top:12px}
+    .setting h3{margin:0 0 8px;font-size:16px}
+    input[type="text"], input[type="url"]{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text)}
   </style>
 </head>
 <body>
   <header>
     <div class="wrap">
       <h1>QuickCapture</h1>
+      <div class="sub">Focus. Task management with simple flow.</div>
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-view="inboxView" role="tab" aria-selected="true">Inbox</button>
+        <button class="tab" data-view="doneView" role="tab" aria-selected="false">Done</button>
+        <button class="tab" data-view="statsView" role="tab" aria-selected="false">Stats</button>
+        <button class="tab" data-view="settingsView" role="tab" aria-selected="false">Settings</button>
+      </div>
     </div>
   </header>
+
   <main class="wrap">
+    <!-- Capture -->
     <section class="input" id="capture">
-      <textarea id="note" placeholder="Type your idea or task…" inputmode="text" autocapitalize="sentences" autocomplete="off" autocorrect="on"></textarea>
+      <textarea id="note" placeholder="Type your task or idea…" inputmode="text" autocapitalize="sentences" autocomplete="off" autocorrect="on"></textarea>
       <div class="row">
         <div class="tags" id="tagPills"></div>
         <button class="btn primary" id="saveBtn">Save</button>
         <button class="btn ghost" id="clearBtn" title="Clear text">Clear</button>
       </div>
-      <div class="hint">Tip: tap mic on iOS keyboard to dictate. Everything saves locally. No reminders.</div>
+      <div class="hint">Tip: everything saves locally. Use Email to share or Sync Link to move between devices.</div>
     </section>
 
     <div class="toolbar">
       <button class="btn" id="copyPending">Copy pending</button>
-      <button class="btn" id="exportJSON">Export JSON</button>
-      <button class="btn" id="exportCSV">Export CSV</button>
+      <button class="btn" id="emailAll">Email tasks</button>
       <button class="btn ghost" id="purgeAll" title="Delete all entries">Purge</button>
     </div>
 
     <div class="divider"></div>
 
-    <section>
+    <!-- Inbox View -->
+    <section id="inboxView" class="view active" aria-label="Inbox">
       <div class="row">
         <h2 style="margin:0;font-size:18px">Inbox</h2>
         <span class="hint" id="countHint"></span>
@@ -75,11 +133,52 @@
       <div class="list" id="list"></div>
       <div class="empty" id="empty">Empty. Add something above.</div>
     </section>
+
+    <!-- Done View -->
+    <section id="doneView" class="view" aria-label="Done">
+      <div class="row">
+        <h2 style="margin:0;font-size:18px">Done</h2>
+        <span class="hint" id="doneCountHint"></span>
+      </div>
+      <div class="list" id="doneList"></div>
+      <div class="empty" id="doneEmpty">No completed items yet.</div>
+    </section>
+
+    <!-- Stats View -->
+    <section id="statsView" class="view" aria-label="Stats">
+      <h2 style="margin:0 0 6px;font-size:18px">Statistics</h2>
+      <div class="stats" id="stats"></div>
+      <div class="setting">
+        <h3>Breakdown by tag</h3>
+        <div id="tagBreakdown" class="list"></div>
+      </div>
+    </section>
+
+    <!-- Settings View -->
+    <section id="settingsView" class="view" aria-label="Settings">
+      <div class="setting">
+        <h3>Sharable Link</h3>
+        <p class="hint">Generate a unique link with your latest tasks. Open it on another device and use Import from current URL.</p>
+        <div class="row">
+          <button class="btn" id="genShareLink">Generate Sharable Link</button>
+          <button class="btn" id="emailShareLink">Email the Link</button>
+          <button class="btn" id="importFromURL">Import from current URL</button>
+        </div>
+        <div class="row" style="flex:1;min-width:100%">
+          <input type="url" id="shareLink" placeholder="Your sharable link will appear here" readonly>
+        </div>
+      </div>
+      </div>
+      <div class="setting">
+        <h3>Active hashtags</h3>
+        <div class="tags" id="tagPillsSettings"></div>
+      </div>
+    </section>
   </main>
 
   <script>
   ;(() => {
-    const LS_KEY = 'qc_items_v1';
+    const LS_KEY = 'qc_items_v2'; // bumped for new fields
     const DRAFT_KEY = 'qc_draft_v1';
     const DEFAULT_TAGS = ['task','idea','errand','note'];
 
@@ -93,18 +192,25 @@
     const saveBtn = document.getElementById('saveBtn');
     const clearBtn = document.getElementById('clearBtn');
     const list = document.getElementById('list');
+    const doneList = document.getElementById('doneList');
     const empty = document.getElementById('empty');
+    const doneEmpty = document.getElementById('doneEmpty');
     const tagPills = document.getElementById('tagPills');
+    const tagPillsSettings = document.getElementById('tagPillsSettings');
     const countHint = document.getElementById('countHint');
+    const doneCountHint = document.getElementById('doneCountHint');
+    const statsBox = document.getElementById('stats');
+    const tagBreakdown = document.getElementById('tagBreakdown');
 
     /** Init **/
     // restore draft
     note.value = localStorage.getItem(DRAFT_KEY) || '';
     autoResize(note);
     renderTagPills();
-    render();
+    renderTagPillsSettings();
+    renderAll();
 
-    // focus quickly without zoom glitches (font-size >=16px prevents zoom)
+    // focus without zoom glitches
     setTimeout(() => note.focus({preventScroll:false}), 150);
 
     /** Events **/
@@ -122,14 +228,61 @@
       toast('Copied');
     });
 
-    document.getElementById('exportJSON').addEventListener('click', () => download('quickcapture.json', JSON.stringify(items, null, 2)));
-    document.getElementById('exportCSV').addEventListener('click', () => download('quickcapture.csv', toCSV(items)));
+    document.getElementById('emailAll').addEventListener('click', () => {
+      const body = encodeURIComponent(items.map(fmtLine).join('\n'));
+      const subject = encodeURIComponent('QuickCapture tasks');
+      location.href = `mailto:?subject=${subject}&body=${body}`;
+    });
 
     document.getElementById('purgeAll').addEventListener('click', () => {
       if (!confirm('Delete all entries?')) return;
       items = [];
       save();
-      render();
+      renderAll();
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => switchView(btn)));
+
+    // Settings: Share link
+    const shareLinkInput = document.getElementById('shareLink');
+    function generateShareLink(){
+      const payload = encodePayload(items);
+      const url = `${location.origin}${location.pathname}?import=${encodeURIComponent(payload)}&v=${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
+      if (shareLinkInput) shareLinkInput.value = url;
+      if (url.length > 1800) {
+        console.warn('Sharable link is long. Some apps may trim it.');
+      }
+      return url;
+    }
+    document.getElementById('genShareLink').addEventListener('click', () => {
+      window.lastShareURL = generateShareLink();
+      toast('Sharable link generated');
+    });
+    document.getElementById('emailShareLink').addEventListener('click', () => {
+      if (!window.lastShareURL) window.lastShareURL = generateShareLink();
+      const subject = encodeURIComponent('QuickCapture share link');
+      const body = encodeURIComponent(`Open this link on your other device to import tasks:
+
+${window.lastShareURL}
+
+Then go to Settings -> Import from current URL.`);
+      location.href = `mailto:javahirahmedov@gmail.com?subject=${subject}&body=${body}`;
+    });
+    document.getElementById('importFromURL').addEventListener('click', () => {
+      const params = new URLSearchParams(location.search);
+      const imp = params.get('import');
+      if (!imp) { alert('No import payload found in the URL'); return; }
+      try {
+        const data = decodePayload(imp);
+        if (!Array.isArray(data)) throw new Error('Invalid data');
+        items = mergeById(items, data);
+        save();
+        renderAll();
+        toast('Imported');
+      } catch (e) {
+        alert('Import failed');
+      }
     });
 
     /** Functions **/
@@ -143,46 +296,99 @@
       note.value = '';
       localStorage.removeItem(DRAFT_KEY);
       autoResize(note);
-      render();
+      renderAll();
     }
 
-    function render(){
+    function renderAll(){
+      renderLists();
+      renderStats();
+    }
+
+    function renderLists(){
+      // Separate
+      const ongoing = items.filter(i=>!i.done);
+      const completed = items.filter(i=>i.done);
+
+      // Inbox
       list.innerHTML = '';
-      if (!items.length){ empty.style.display='block'; countHint.textContent=''; return; }
-      empty.style.display='none';
-      countHint.textContent = `${items.filter(i=>!i.done).length} pending / ${items.length} total`;
-      for (const it of items){
-        const card = document.createElement('div');
-        card.className = 'card' + (it.done ? ' done' : '');
-        const top = document.createElement('div');
-        top.className = 'top';
-        const tags = document.createElement('div');
-        tags.className = 'tags';
-        for (const t of it.tags){
-          const span = document.createElement('span');
-          span.className = 'tag';
-          span.textContent = `#${t}`;
-          tags.appendChild(span);
-        }
-        const time = document.createElement('span');
-        time.className = 'hint';
-        time.textContent = timeAgo(it.createdAt);
-        top.append(tags, time);
-
-        const text = document.createElement('div');
-        text.className = 'text';
-        text.textContent = it.text;
-
-        const tools = document.createElement('div');
-        tools.className = 'tools';
-        const doneBtn = btn(it.done ? 'Mark pending' : 'Mark done', () => { it.done = !it.done; save(); render(); });
-        const copyBtn = btn('Copy', () => { copy(fmtLine(it)); toast('Copied'); });
-        const delBtn = btn('Delete', () => { if(confirm('Delete this?')){ items = items.filter(x=>x.id!==it.id); save(); render(); }});
-        tools.append(doneBtn, copyBtn, delBtn);
-
-        card.append(top, text, tools);
-        list.appendChild(card);
+      if (!ongoing.length){ empty.style.display='block'; countHint.textContent=''; } else {
+        empty.style.display='none';
+        countHint.textContent = `${ongoing.length} pending / ${items.length} total`;
+        for (const it of ongoing){ list.appendChild(renderCard(it)); }
       }
+
+      // Done
+      doneList.innerHTML = '';
+      if (!completed.length){ doneEmpty.style.display='block'; doneCountHint.textContent=''; } else {
+        doneEmpty.style.display='none';
+        doneCountHint.textContent = `${completed.length} completed`;
+        for (const it of completed){ doneList.appendChild(renderCard(it)); }
+      }
+    }
+
+    function renderCard(it){
+      const card = document.createElement('div');
+      card.className = 'card' + (it.done ? ' done' : '');
+
+      // Aging color for ongoing
+      if (!it.done){
+        const age = ageDays(it.createdAt);
+        if (age <= 2) card.classList.add('age-green');
+        else if (age <= 4) card.classList.add('age-orange');
+        else card.classList.add('age-red');
+      }
+
+      const top = document.createElement('div');
+      top.className = 'top';
+      const tags = document.createElement('div');
+      tags.className = 'tags';
+      for (const t of it.tags){
+        const span = document.createElement('span');
+        span.className = 'tag';
+        span.textContent = `#${t}`;
+        tags.appendChild(span);
+      }
+      const time = document.createElement('span');
+      time.className = 'hint';
+      time.textContent = timeAgo(it.createdAt);
+      top.append(tags, time);
+
+      const text = document.createElement('div');
+      text.className = 'text';
+      text.textContent = it.text;
+
+      // Tools
+      const tools = document.createElement('div');
+      tools.className = 'tools';
+      const doneBtn = btn(it.done ? 'Mark pending' : 'Mark done', () => {
+        it.done = !it.done; 
+        if (it.done) { it.completedAt = Date.now(); }
+        else { delete it.completedAt; }
+        save(); renderAll(); 
+      });
+      const editBtn = btn('Edit', () => startEdit(text, it));
+      const copyBtn = btn('Copy', () => { copy(fmtLine(it)); toast('Copied'); });
+      const delBtn = btn('Delete', () => { if(confirm('Delete this?')){ items = items.filter(x=>x.id!==it.id); save(); renderAll(); }});
+      tools.append(doneBtn, editBtn, copyBtn, delBtn);
+
+      card.append(top, text, tools);
+      return card;
+    }
+
+    function startEdit(textEl, it){
+      const initial = it.text;
+      const ta = document.createElement('textarea');
+      ta.value = initial;
+      ta.style.width = '100%';
+      ta.style.minHeight = '84px';
+      ta.oninput = () => autoResize(ta);
+      textEl.replaceWith(ta);
+      autoResize(ta);
+
+      const tools = ta.parentElement.querySelector('.tools');
+      const saveBtn = btn('Save', () => { it.text = ta.value.trim() || initial; save(); renderAll(); });
+      const cancelBtn = btn('Cancel', () => { renderAll(); });
+      tools.append(saveBtn, cancelBtn);
     }
 
     function renderTagPills(){
@@ -200,20 +406,93 @@
       }
     }
 
+    function renderTagPillsSettings(){
+      tagPillsSettings.innerHTML = '';
+      for (const t of DEFAULT_TAGS){
+        const pill = document.createElement('div');
+        pill.className = 'pill' + (activeTags.has(t) ? ' active' : '');
+        pill.textContent = `#${t}`;
+        pill.addEventListener('click', () => {
+          if (activeTags.has(t)) activeTags.delete(t); else activeTags.add(t);
+          localStorage.setItem('qc_active_tags', JSON.stringify(Array.from(activeTags)));
+          renderTagPills();
+          renderTagPillsSettings();
+        });
+        tagPillsSettings.appendChild(pill);
+      }
+    }
+
+    function renderStats(){
+      const total = items.length;
+      const pending = items.filter(i=>!i.done).length;
+      const done = items.filter(i=>i.done).length;
+      const rate = total ? Math.round((done/total)*100) : 0;
+      const withTimes = items.filter(i=>i.completedAt && i.createdAt);
+      const avgMs = withTimes.length ? Math.round(withTimes.reduce((s,i)=>s+(i.completedAt - i.createdAt),0)/withTimes.length) : 0;
+      const avg = humanDuration(avgMs);
+
+      statsBox.innerHTML = '';
+      statsBox.append(
+        statCard('Total', String(total)),
+        statCard('Pending', String(pending)),
+        statCard('Completed', String(done)),
+        progressCard('Completion rate', rate),
+        statCard('Avg time to complete', avg)
+      );
+
+      // Tag breakdown (done items)
+      const doneItems = items.filter(i=>i.done);
+      const byTag = new Map();
+      for (const it of doneItems){
+        for (const t of it.tags){ byTag.set(t, (byTag.get(t)||0)+1); }
+      }
+      tagBreakdown.innerHTML = '';
+      if (byTag.size === 0){
+        const div = document.createElement('div');
+        div.className='empty';
+        div.textContent='No completed items yet.';
+        tagBreakdown.appendChild(div);
+      } else {
+        for (const [t,count] of byTag){
+          const row = document.createElement('div');
+          row.className = 'stat';
+          row.innerHTML = `<h3>#${t}</h3><div class="big">${count}</div>`;
+          tagBreakdown.appendChild(row);
+        }
+      }
+    }
+
+    function statCard(label, value){
+      const d = document.createElement('div');
+      d.className='stat';
+      d.innerHTML = `<h3>${label}</h3><div class="big">${value}</div>`;
+      return d;
+    }
+    function progressCard(label, pct){
+      const d = document.createElement('div');
+      d.className='stat';
+      const bar = document.createElement('div');
+      bar.className='bar';
+      const fill = document.createElement('div');
+      fill.style.width = pct + '%';
+      fill.style.background = 'linear-gradient(90deg, var(--ok), var(--accent))';
+      bar.appendChild(fill);
+      d.innerHTML = `<h3>${label}</h3>`;
+      d.appendChild(bar);
+      const p = document.createElement('div');
+      p.style.marginTop = '8px';
+      p.style.fontWeight = '800';
+      p.textContent = pct + '%';
+      d.appendChild(p);
+      return d;
+    }
+
     function btn(label, fn){ const b=document.createElement('button'); b.className='btn'; b.textContent=label; b.onclick=fn; return b; }
     function uid(){ return Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4); }
     function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY))||[] }catch{ return [] } }
     function save(){ localStorage.setItem(LS_KEY, JSON.stringify(items)); }
     function fmtLine(i){ return `• ${i.text} ${i.tags.length?('['+i.tags.join(',')+']'):''}`.trim(); }
     function copy(s){ navigator.clipboard?.writeText(s).catch(()=>{}); }
-    function download(name, content){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([content], {type:'text/plain'})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000); }
-    function toCSV(rows){
-      const esc = v => '"' + String(v).replaceAll('"','""') + '"';
-      const header = ['id','text','tags','createdAt','done'];
-      const lines = [header.join(',')];
-      for (const r of rows){ lines.push([r.id, r.text, r.tags.join('|'), new Date(r.createdAt).toISOString(), r.done].map(esc).join(',')); }
-      return lines.join('\n');
-    }
     function timeAgo(ts){
       const s=(Date.now()-ts)/1000; if(s<60) return 'just now';
       const m=s/60; if(m<60) return `${Math.floor(m)}m`;
@@ -221,14 +500,65 @@
       const d=h/24; if(d<7) return `${Math.floor(d)}d`;
       const dt=new Date(ts); return dt.toLocaleDateString();
     }
+    function ageDays(ts){ return Math.floor((Date.now() - ts) / (24*60*60*1000)); }
     function autoResize(el){ el.style.height='auto'; el.style.height = (el.scrollHeight+2) + 'px'; }
 
-    // Pull to quick-add via share sheet text (if opened with ?t=...)
-    try {
-      const params = new URLSearchParams(location.search);
-      const t = params.get('t');
-      if (t) { note.value = decodeURIComponent(t); autoResize(note); }
-    } catch {}
+    function humanDuration(ms){
+      if (!ms) return 'n/a';
+      const d = Math.floor(ms/86400000); ms%=86400000;
+      const h = Math.floor(ms/3600000); ms%=3600000;
+      const m = Math.floor(ms/60000);
+      if (d>0) return `${d}d ${h}h`;
+      if (h>0) return `${h}h ${m}m`;
+      return `${m}m`;
+    }
+
+    // Portable Sync helpers
+    function encodePayload(obj){
+      const json = JSON.stringify(obj);
+      return btoa(unescape(encodeURIComponent(json)));
+    }
+    function decodePayload(str){
+      const json = decodeURIComponent(escape(atob(str)));
+      return JSON.parse(json);
+    }
+    function mergeById(existing, incoming){
+      const map = new Map(existing.map(i=>[i.id,i]));
+      for (const it of incoming){ map.set(it.id, it); }
+      return Array.from(map.values()).sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
+    }
+
+    // Import via URL param on first load
+    (function importViaQuery(){
+      try {
+        const params = new URLSearchParams(location.search);
+        const t = params.get('t');
+        if (t) { note.value = decodeURIComponent(t); autoResize(note); }
+        const imp = params.get('import');
+        if (imp) {
+          const data = decodePayload(imp);
+          if (Array.isArray(data)){
+            items = mergeById(items, data);
+            save();
+            renderAll();
+            toast('Imported');
+          }
+        }
+      } catch {}
+    })();
+
+    // Tabs logic
+    function switchView(btn){
+      document.querySelectorAll('.tab').forEach(b=>{b.classList.remove('active'); b.setAttribute('aria-selected','false');});
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected','true');
+      const target = btn.dataset.view;
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+      if (target==='statsView') renderStats();
+    }
+
+    function toast(_msg){ /* no-op placeholder for future */ }
   })();
   </script>
 </body>
